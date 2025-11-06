@@ -160,26 +160,38 @@ def career_plan():
     goal_role = data.get("goal_role", "")
     current_skills = set(data.get("current_skills", []))
     required_skills = set(data.get("required_skills", []))
+    experience_level = data.get("experience_level", "none").lower()  # Optional field
 
     missing_skills = list(required_skills - current_skills)
 
-    learning_plan = [
-        {
+    learning_plan = []
+    for skill in missing_skills:
+        learning_plan.append({
             "skill": skill,
             "suggested_course": f"{skill} Fundamentals (Coursera)",
             "duration": "3–4 weeks",
             "hours_per_week": 4
-        }
-        for skill in missing_skills
-    ]
+        })
+
+    if experience_level in ["none", "beginner"]:
+        suggested_start = "Entry-level roles like 'Junior Analyst', 'Data Assistant', or 'Trainee'."
+        timeline = "6–12 months to become job-ready with project proof."
+    elif experience_level in ["intermediate"]:
+        suggested_start = "Mid-level roles like 'Insights Analyst' or 'Customer Data Specialist'."
+        timeline = "3–6 months of focused upskilling + portfolio building."
+    else:
+        suggested_start = f"You may already qualify for '{goal_role}' — review your CV and focus on tailoring."
+        timeline = "1–3 months to prepare strong application materials."
 
     return jsonify({
         "goal_role": goal_role,
         "missing_skills": missing_skills,
-        "timeline_estimate_weeks": len(learning_plan) * 4,
+        "learning_timeline": timeline,
+        "starting_role_suggestion": suggested_start,
         "step_by_step_plan": learning_plan,
-        "final_step": "Update CV and portfolio to reflect new skills"
+        "final_step": "Complete at least 2 portfolio-ready projects and tailor your CV with outcomes and tools."
     })
+
 @app.route('/job-tracker', methods=['POST'])
 def job_tracker():
     data = request.get_json()
