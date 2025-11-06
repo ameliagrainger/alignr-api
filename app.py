@@ -7,6 +7,10 @@ app = Flask(__name__)
 def home():
     return "Alignr API is running."
 
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "ok"}), 200
+
 @app.route('/score-job', methods=['POST'])
 def score_job():
     data = request.get_json()
