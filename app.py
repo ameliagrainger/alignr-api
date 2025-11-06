@@ -202,6 +202,33 @@ def career_plan():
         "step_by_step_plan": learning_plan,
         "final_step": "Update CV and portfolio with projects demonstrating these skills"
     })
+@app.route('/job-level-validation', methods=['POST'])
+def job_level_validation():
+    data = request.get_json()
+    skills = set(data.get("skills", []))
+    experience_years = data.get("experience_years", 0)
+
+    if experience_years < 1:
+        suggested_level = "Entry Level"
+        reason = "You have limited experience — great for internships or junior roles."
+    elif experience_years < 3 and "SQL" in skills and "Excel" in skills:
+        suggested_level = "Junior Analyst"
+        reason = "You meet common expectations for junior analytical roles."
+    elif experience_years >= 3 and "Python" in skills and "SQL" in skills:
+        suggested_level = "Mid-Level Analyst"
+        reason = "Your technical skills and experience align with mid-level roles."
+    else:
+        suggested_level = "Needs Review"
+        reason = "We’d need more context to recommend a level."
+
+    return jsonify({
+        "suggested_level": suggested_level,
+        "reason": reason,
+        "suggestions": [
+            "Add projects to show applied skills.",
+            "Highlight leadership or mentoring to aim higher."
+        ]
+    })
 
 
 @app.route('/job-tracker', methods=['POST'])
