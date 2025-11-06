@@ -160,37 +160,49 @@ def career_plan():
     goal_role = data.get("goal_role", "")
     current_skills = set(data.get("current_skills", []))
     required_skills = set(data.get("required_skills", []))
-    experience_level = data.get("experience_level", "none").lower()  # Optional field
+    experience_years = data.get("experience_years", 0)
 
     missing_skills = list(required_skills - current_skills)
+    estimated_weeks = len(missing_skills) * 4
 
-    learning_plan = []
-    for skill in missing_skills:
-        learning_plan.append({
+    # Determine path level and validate against experience
+    if "senior" in goal_role.lower():
+        if experience_years < 5:
+            return jsonify({
+                "error": "Senior roles typically require 5+ years of experience. Try targeting a mid-level role first."
+            }), 400
+        path_level = "Senior Role"
+        realistic_timeline = "12–24 months with leadership projects and real-world delivery."
+    elif "mid" in goal_role.lower() or "associate" in goal_role.lower():
+        if experience_years < 2:
+            return jsonify({
+                "error": "Mid-level roles usually require at least 2 years of experience. Consider an entry-level path first."
+            }), 400
+        path_level = "Intermediate Role"
+        realistic_timeline = "6–12 months with real projects and collaboration experience."
+    else:
+        path_level = "Entry-Level Role"
+        realistic_timeline = "3–6 months with focused learning and practical projects."
+
+    learning_plan = [
+        {
             "skill": skill,
             "suggested_course": f"{skill} Fundamentals (Coursera)",
             "duration": "3–4 weeks",
             "hours_per_week": 4
-        })
-
-    if experience_level in ["none", "beginner"]:
-        suggested_start = "Entry-level roles like 'Junior Analyst', 'Data Assistant', or 'Trainee'."
-        timeline = "6–12 months to become job-ready with project proof."
-    elif experience_level in ["intermediate"]:
-        suggested_start = "Mid-level roles like 'Insights Analyst' or 'Customer Data Specialist'."
-        timeline = "3–6 months of focused upskilling + portfolio building."
-    else:
-        suggested_start = f"You may already qualify for '{goal_role}' — review your CV and focus on tailoring."
-        timeline = "1–3 months to prepare strong application materials."
+        }
+        for skill in missing_skills
+    ]
 
     return jsonify({
         "goal_role": goal_role,
+        "path_level": path_level,
         "missing_skills": missing_skills,
-        "learning_timeline": timeline,
-        "starting_role_suggestion": suggested_start,
+        "realistic_timeline": realistic_timeline,
         "step_by_step_plan": learning_plan,
-        "final_step": "Complete at least 2 portfolio-ready projects and tailor your CV with outcomes and tools."
+        "final_step": "Update CV and portfolio with projects demonstrating these skills"
     })
+
 
 @app.route('/job-tracker', methods=['POST'])
 def job_tracker():
