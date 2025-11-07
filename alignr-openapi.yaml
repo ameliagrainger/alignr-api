@@ -1,15 +1,30 @@
 openapi: 3.1.0
 info:
   title: Alignr Job Intelligence API
-  description: API for scoring jobs, identifying skill gaps, tailoring CVs, and career planning.
+  description: API for scoring jobs, identifying skill gaps, tailoring CVs, career planning, and more.
   version: 1.0.0
 servers:
   - url: https://alignr-api.onrender.com
 paths:
+  /health:
+    get:
+      operationId: healthCheck
+      summary: Health check
+      responses:
+        "200":
+          description: API is healthy
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+
   /score-job:
     post:
       operationId: scoreJob
-      summary: Score a CV or skill set against a job description
+      summary: Score job match based on user skills
       requestBody:
         required: true
         content:
@@ -24,8 +39,8 @@ paths:
                 job_description:
                   type: string
       responses:
-        '200':
-          description: Match score and feedback
+        "200":
+          description: Job match score and skill comparison
           content:
             application/json:
               schema:
@@ -44,38 +59,53 @@ paths:
                   notes:
                     type: string
 
-  /skills-gap-table:
+  /skills-gap:
     post:
-      operationId: skillsGapTable
-      summary: Get a table of missing vs matched skills
+      operationId: getSkillsGap
+      summary: Recommend courses to close skill gaps
       requestBody:
         required: true
         content:
           application/json:
             schema:
               type: object
-              properties:
-                user_skills:
-                  type: array
-                  items:
-                    type: string
-                job_description:
-                  type: string
       responses:
-        '200':
-          description: Table showing skill match status
+        "200":
+          description: Skills and course recommendations
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  table:
+                  job_title:
                     type: string
+                  skills_to_develop:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        skill:
+                          type: string
+                        why_needed:
+                          type: string
+                        how_to_evidence:
+                          type: string
+                        recommended_course:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            provider:
+                              type: string
+                            duration:
+                              type: string
+                            hours_per_week:
+                              type: integer
 
-  /extract-job-skills:
+  /cv-feedback:
     post:
-      operationId: extractJobSkills
-      summary: Extract required skills from job description
+      operationId: getCvFeedback
+      summary: Provide CV improvement suggestions
       requestBody:
         required: true
         content:
@@ -83,25 +113,271 @@ paths:
             schema:
               type: object
               properties:
-                job_description:
+                cv_text:
                   type: string
       responses:
-        '200':
-          description: Extracted list of skills
+        "200":
+          description: CV feedback and questions
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  skills:
+                  feedback_points:
+                    type: array
+                    items:
+                      type: string
+                  prompt_questions:
                     type: array
                     items:
                       type: string
 
-  /check-skills-gap:
+  /guidance-intake:
     post:
-      operationId: checkSkillsGap
-      summary: Compare user's skills to job and find gaps
+      operationId: guidanceIntake
+      summary: Intake user goal and suggest next step
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                goal:
+                  type: string
+      responses:
+        "200":
+          description: Next step based on goal
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  type:
+                    type: string
+                  next_step:
+                    type: string
+
+  /career-quiz:
+    post:
+      operationId: runCareerQuiz
+      summary: Personality-based career suggestion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                answers:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Suggested careers based on quiz
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  personality_summary:
+                    type: string
+                  career_suggestion:
+                    type: string
+                  next_step:
+                    type: string
+
+  /career-discovery:
+    post:
+      operationId: discoverCareers
+      summary: Suggest careers and SWOT based on profile
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                personality:
+                  type: array
+                  items:
+                    type: string
+                interests:
+                  type: array
+                  items:
+                    type: string
+                skills:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: SWOT and career suggestions
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggested_careers:
+                    type: array
+                    items:
+                      type: string
+                  swot_summary:
+                    type: object
+                    properties:
+                      strengths:
+                        type: array
+                        items:
+                          type: string
+                      weaknesses:
+                        type: array
+                        items:
+                          type: string
+                      opportunities:
+                        type: array
+                        items:
+                          type: string
+                      threats:
+                        type: array
+                        items:
+                          type: string
+
+  /career-plan:
+    post:
+      operationId: careerPlan
+      summary: Create learning plan based on career goals
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                goal_role:
+                  type: string
+                current_skills:
+                  type: array
+                  items:
+                    type: string
+                required_skills:
+                  type: array
+                  items:
+                    type: string
+      responses:
+        "200":
+          description: Career learning plan
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  goal_role:
+                    type: string
+                  missing_skills:
+                    type: array
+                    items:
+                      type: string
+                  timeline_estimate_weeks:
+                    type: integer
+                  step_by_step_plan:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        skill:
+                          type: string
+                  final_step:
+                    type: string
+
+  /job-level-validation:
+    post:
+      operationId: validateJobLevel
+      summary: Suggest job level based on experience
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                skills:
+                  type: array
+                  items:
+                    type: string
+                experience_years:
+                  type: integer
+      responses:
+        "200":
+          description: Suggested job level and advice
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  suggested_level:
+                    type: string
+                  reason:
+                    type: string
+                  suggestions:
+                    type: array
+                    items:
+                      type: string
+
+  /job-tracker:
+    post:
+      operationId: jobTracker
+      summary: Track job applications
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                applications:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      job_title:
+                        type: string
+                      company:
+                        type: string
+                      deadline:
+                        type: string
+                      tailored_cv:
+                        type: boolean
+                      status:
+                        type: string
+      responses:
+        "200":
+          description: Application advice
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  applications:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        job_title:
+                          type: string
+                        company:
+                          type: string
+                        cv_tips:
+                          type: array
+                          items:
+                            type: string
+                        next_action:
+                          type: string
+
+  /skills-gap-table:
+    post:
+      operationId: skillsGapTable
+      summary: Table showing matched and missing job skills
       requestBody:
         required: true
         content:
@@ -118,14 +394,96 @@ paths:
                   items:
                     type: string
       responses:
-        '200':
-          description: Skill gap comparison
+        "200":
+          description: Skills gap table
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  missing_skills:
+                  gap_table:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        skill:
+                          type: string
+                        status:
+                          type: string
+                        action:
+                          type: string
+                  summary:
+                    type: object
+                    properties:
+                      matched_skills:
+                        type: array
+                        items:
+                          type: string
+                      missing_skills:
+                        type: array
+                        items:
+                          type: string
+                      total_required:
+                        type: integer
+                      total_matched:
+                        type: integer
+                      total_missing:
+                        type: integer
+
+  /extract-job-skills:
+    post:
+      operationId: extractJobSkills
+      summary: Extract skills from a job description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                job_description:
+                  type: string
+      responses:
+        "200":
+          description: Skills mentioned in job description
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  extracted_skills:
+                    type: array
+                    items:
+                      type: string
+                  note:
+                    type: string
+
+  /check-skills-gap:
+    post:
+      operationId: checkSkillsGap
+      summary: Compare user skills to job description
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user_skills:
+                  type: array
+                  items:
+                    type: string
+                job_description:
+                  type: string
+      responses:
+        "200":
+          description: Skill comparison summary
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  job_skills_found:
                     type: array
                     items:
                       type: string
@@ -133,11 +491,17 @@ paths:
                     type: array
                     items:
                       type: string
+                  missing_skills:
+                    type: array
+                    items:
+                      type: string
+                  gap_note:
+                    type: string
 
   /recommend-learning:
     post:
       operationId: recommendLearning
-      summary: Recommend learning resources for missing skills
+      summary: Recommend courses based on missing skills
       requestBody:
         required: true
         content:
@@ -150,98 +514,33 @@ paths:
                   items:
                     type: string
       responses:
-        '200':
-          description: List of learning resources
+        "200":
+          description: Recommended learning resources
           content:
             application/json:
               schema:
                 type: object
                 properties:
-                  resources:
+                  recommendations:
                     type: array
                     items:
-                      type: string
-
-  /cv-tweaks:
-    post:
-      operationId: cvTweaks
-      summary: Suggest ways to tailor a CV for a job
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                cv_text:
-                  type: string
-                job_description:
-                  type: string
-      responses:
-        '200':
-          description: Suggested improvements for CV
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  suggestions:
+                      type: object
+                      properties:
+                        skill:
+                          type: string
+                        course:
+                          type: object
+                          properties:
+                            name:
+                              type: string
+                            provider:
+                              type: string
+                            duration:
+                              type: string
+                            hours_per_week:
+                              type: integer
+                            reason:
+                              type: string
+                  note:
                     type: string
 
-  /career-discovery:
-    post:
-      operationId: careerDiscovery
-      summary: Discover new roles based on user interests or experience
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                background:
-                  type: string
-                goals:
-                  type: string
-      responses:
-        '200':
-          description: Career recommendations
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  career_suggestion:
-                    type: string
-                  next_step:
-                    type: string
-
-  /job-level-validation:
-    post:
-      operationId: validateJobLevel
-      summary: Suggest job level (e.g., junior/senior) based on skills
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                user_skills:
-                  type: array
-                  items:
-                    type: string
-                experience_years:
-                  type: integer
-      responses:
-        '200':
-          description: Estimated job level
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  level:
-                    type: string
-                  reasoning:
-                    type: string
